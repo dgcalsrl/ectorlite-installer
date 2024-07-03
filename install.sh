@@ -1,103 +1,105 @@
 #!/bin/bash
 
-PS_VERSION="8.1.7"
+# Funzione per scaricare e estrarre PrestaShop
+download_and_extract_prestashop() {
+  local PS_VERSION="8.1.7"
+  local DOWNLOAD_URL="https://github.com/PrestaShop/PrestaShop/releases/download/$PS_VERSION/prestashop_$PS_VERSION.zip"
+  local ZIP_FILE="prestashop_$PS_VERSION.zip"
 
-DOWNLOAD_URL="https://github.com/PrestaShop/PrestaShop/releases/download/$PS_VERSION/prestashop_$PS_VERSION.zip"
+  echo "Scaricando PrestaShop versione $PS_VERSION..."
+  curl -L -o $ZIP_FILE $DOWNLOAD_URL
 
-# Nome del file zip
-ZIP_FILE="prestashop_$PS_VERSION.zip"
+  if [ $? -ne 0 ]; then
+    echo "Errore: il download del file $ZIP_FILE non è riuscito."
+    exit 1
+  fi
 
-# Scarica il file zip
-curl -L -o $ZIP_FILE $DOWNLOAD_URL
+  echo "Estraendo $ZIP_FILE..."
+  unzip -o $ZIP_FILE
 
-# Verifica se il download è andato a buon fine
-if [ $? -ne 0 ]; then
-  echo "Errore: il download del file $ZIP_FILE non è riuscito."
-  exit 1
-fi
+  if [ $? -ne 0 ]; then
+    echo "Errore: l'estrazione del file $ZIP_FILE non è riuscita."
+    exit 1
+  fi
 
-# Estrai il contenuto dello zip nella directory corrente
-unzip -o $ZIP_FILE
+  rm $ZIP_FILE
+  unzip -o prestashop.zip
+  echo "PrestaShop versione $PS_VERSION scaricata ed estratta con successo."
+}
 
-# Verifica se l'estrazione è andata a buon fine
-if [ $? -ne 0 ]; then
-  echo "Errore: l'estrazione del file $ZIP_FILE non è riuscita."
-  exit 1
-fi
+# Funzione per scaricare e estrarre un asset da una release GitHub
+download_and_extract_github_asset() {
+  read -p "Inserisci il tuo token GitHub: " GITHUB_TOKEN
 
-# Rimuovi il file zip scaricato
-rm $ZIP_FILE
+  if [ -z "$GITHUB_TOKEN" ]; then
+    echo "Errore: nessun token inserito."
+    exit 1
+  fi
 
-echo "PrestaShop versione $PS_VERSION scaricata ed estratta con successo."
+  local TAG=0.0.14
+  local ASSET_NAME="bundle.zip"
+  local ZIP_FILE="bundle.zip"
+  local REPO="dgcalsrl/ps-deployer"
+  local API_URL="https://api.github.com/repos/$REPO/releases/tags/$TAG"
+
+  echo "Recuperando informazioni sulla release..."
+  local RELEASE_JSON=$(curl -s -H "Authorization: token $GITHUB_TOKEN" $API_URL)
+  local RELEASE_ID=$(echo $RELEASE_JSON | grep -oP '"id": \K\d+')
+
+  if [ -z "$RELEASE_ID" ]; then
+    echo "Errore: impossibile trovare la release con il tag $TAG."
+    exit 1
+  fi
+
+  echo "Recuperando informazioni sugli asset..."
+  local ASSETS_JSON=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/releases/$RELEASE_ID/assets")
+  local ASSET_ID=$(echo $ASSETS_JSON | grep -oP '"id": \K\d+(?=.*"name": "'$ASSET_NAME'")')
+
+  if [ -z "$ASSET_ID" ]; then
+    echo "Errore: impossibile trovare l'asset $ASSET_NAME nella release con il tag $TAG."
+    exit 1
+  fi
+
+  local ASSET_URL="https://api.github.com/repos/$REPO/releases/assets/$ASSET_ID"
+  echo "Scaricando l'asset $ASSET_NAME..."
+  curl -L -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/octet-stream" "$ASSET_URL" -o $ZIP_FILE
+
+  if [ $? -ne 0 ]; then
+    echo "Errore: il download del file $ZIP_FILE non è riuscito."
+    exit 1
+  fi
+
+  echo "Estraendo $ZIP_FILE..."
+  unzip -o $ZIP_FILE
+
+  if [ $? -ne 0 ]; then
+    echo "Errore: l'estrazione del file $ZIP_FILE non è riuscita."
+    exit 1
+  fi
+
+  rm $ZIP_FILE
+  echo "Il file $ASSET_NAME è stato scaricato ed estratto con successo."
+}
 
 
-#!/bin/bash
+rename_and_create_redirect() {
+  local INDEX_FILE="index.php"
+  local OLD_INDEX_FILE="old.index.php"
+  local REDIRECT_CONTENT="<?php\nheader('Location: /ectorlite');\nexit;\n"
 
-# Chiedi il token all'utente
-read -p "Inserisci il tuo token GitHub: " GITHUB_TOKEN
+  # Rename index.php to old.index.php
+  if [ -f "$INDEX_FILE" ]; then
+    mv "$INDEX_FILE" "$OLD_INDEX_FILE"
+    echo "Renamed $INDEX_FILE to $OLD_INDEX_FILE."
+  else
+    echo "File $INDEX_FILE not found. Skipping rename."
+  fi
 
-# Controlla se il token è stato inserito
-if [ -z "$GITHUB_TOKEN" ]; then
-  echo "Errore: nessun token inserito."
-  exit 1
-fi
+  echo -e "$REDIRECT_CONTENT" > "$INDEX_FILE"
+  echo "Created new $INDEX_FILE with redirect to /ectorlite."
+}
 
-# Specifica il tag della release
-TAG=0.0.13
 
-# Nome del file zip
-ASSET_NAME="bundle.zip"
-ZIP_FILE="bundle.zip"
-
-# URL per ottenere le informazioni sulla release
-REPO="dgcalsrl/ps-deployer"
-API_URL="https://api.github.com/repos/$REPO/releases/tags/$TAG"
-
-# Ottieni l'ID della release
-RELEASE_JSON=$(curl -s -H "Authorization: token $GITHUB_TOKEN" $API_URL)
-
-echo $RELEASE_JSON
-
-RELEASE_ID=$(echo $RELEASE_JSON | grep -oP '"id": \K\d+')
-
-# Controlla se l'ID della release è stato trovato
-if [ -z "$RELEASE_ID" ]; then
-  echo "Errore: impossibile trovare la release con il tag $TAG."
-  exit 1
-fi
-
-# Ottieni le informazioni sugli asset della release
-ASSETS_JSON=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/releases/$RELEASE_ID/assets")
-
-# Ottieni l'ID dell'asset
-ASSET_ID=$(echo $ASSETS_JSON | grep -oP '"id": \K\d+(?=.*"name": "'$ASSET_NAME'")')
-
-# Controlla se l'ID dell'asset è stato trovato
-if [ -z "$ASSET_ID" ]; then
-  echo "Errore: impossibile trovare l'asset $ASSET_NAME nella release con il tag $TAG."
-  exit 1
-fi
-
-# Scarica l'asset utilizzando l'ID
-ASSET_URL="https://api.github.com/repos/$REPO/releases/assets/$ASSET_ID"
-curl -L -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/octet-stream" "$ASSET_URL" -o $ZIP_FILE
-
-# Verifica se il download è andato a buon fine
-if [ $? -ne 0 ]; then
-  echo "Errore: il download del file $ZIP_FILE non è riuscito."
-  exit 1
-fi
-
-# Estrai il contenuto dello zip nella directory corrente
-unzip $ZIP_FILE
-
-# Verifica se l'estrazione è andata a buon fine
-if [ $? -ne 0 ]; then
-  echo "Errore: l'estrazione del file $ZIP_FILE non è riuscita."
-  exit 1
-fi
-
-# Rimuovi il file zip scaricato
-rm $ZIP_FILE
-
-echo "Il file bundle.zip è stato scaricato ed estratto con successo."
+download_and_extract_prestashop
+download_and_extract_github_asset
+rename_and_create_redirect
