@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# Check if GITHUB_TOKEN is set
-if [ -z "$GITHUB_TOKEN" ]; then
-  echo "Errore: nessun token inserito. Imposta la variabile d'ambiente GITHUB_TOKEN."
+# Check if the GitHub token is passed as an argument
+if [ -z "$1" ]; then
+  echo "Error: No GitHub token provided. Usage: $0 <GITHUB_TOKEN>"
   exit 1
 fi
+
+GITHUB_TOKEN="$1"
 
 # Funzione per scaricare e estrarre PrestaShop
 download_and_extract_prestashop() {
@@ -35,9 +37,7 @@ download_and_extract_prestashop() {
 
 # Funzione per scaricare e estrarre un asset da una release GitHub
 download_and_extract_github_asset() {
-
-  local GITHUB_TOKEN="$1"
-  local TAG=0.0.19
+  local TAG=0.0.20
   local ASSET_NAME="bundle.zip"
   local ZIP_FILE="bundle.zip"
   local REPO="dgcalsrl/ps-deployer"
