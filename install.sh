@@ -29,15 +29,14 @@ download_and_extract_prestashop() {
 
 # Funzione per scaricare e estrarre un asset da una release GitHub
 download_and_extract_github_asset() {
-  echo -n "Enter your GitHub token: "
-  read GITHUB_TOKEN
+  read -p "Inserisci il tuo token GitHub: " -r GITHUB_TOKEN
 
   if [ -z "$GITHUB_TOKEN" ]; then
     echo "Errore: nessun token inserito."
     exit 1
   fi
 
-  local TAG=0.0.16
+  local TAG=0.0.17
   local ASSET_NAME="bundle.zip"
   local ZIP_FILE="bundle.zip"
   local REPO="dgcalsrl/ps-deployer"
