@@ -37,7 +37,7 @@ download_and_extract_prestashop() {
 
 # Funzione per scaricare e estrarre un asset da una release GitHub
 download_and_extract_github_asset() {
-  local TAG=0.0.20
+  local TAG=0.0.21
   local ASSET_NAME="bundle.zip"
   local ZIP_FILE="bundle.zip"
   local REPO="dgcalsrl/ps-deployer"
@@ -53,8 +53,7 @@ download_and_extract_github_asset() {
   fi
 
   echo "Recuperando informazioni sugli asset..."
-  local ASSETS_JSON=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/releases/$RELEASE_ID/assets")
-  local ASSET_ID=$(echo $ASSETS_JSON | grep -oP '"id": \K\d+(?=.*"name": "'$ASSET_NAME'")')
+  local ASSET_ID=$(echo $RELEASE_JSON | grep -oP '"id": \K\d+(?=.*"name": "'$ASSET_NAME'")' | tac | head -n 1)
 
   if [ -z "$ASSET_ID" ]; then
     echo "Errore: impossibile trovare l'asset $ASSET_NAME nella release con il tag $TAG."
@@ -82,7 +81,6 @@ download_and_extract_github_asset() {
   echo "Il file $ASSET_NAME è stato scaricato ed estratto con successo."
 }
 
-
 rename() {
   local INDEX_FILE="index.php"
   local OLD_INDEX_FILE="old.index.php"
@@ -98,5 +96,5 @@ rename() {
 
 
 download_and_extract_prestashop
-download_and_extract_github_asset "$GITHUB_TOKEN"
+download_and_extract_github_asset
 rename
