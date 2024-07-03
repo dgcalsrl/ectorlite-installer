@@ -1,9 +1,8 @@
 #!/bin/bash
 
-read -p "Inserisci il tuo token GitHub: " -r GITHUB_TOKEN
-
+# Check if GITHUB_TOKEN is set
 if [ -z "$GITHUB_TOKEN" ]; then
-  echo "Errore: nessun token inserito."
+  echo "Errore: nessun token inserito. Imposta la variabile d'ambiente GITHUB_TOKEN."
   exit 1
 fi
 
@@ -38,7 +37,7 @@ download_and_extract_prestashop() {
 download_and_extract_github_asset() {
 
   local GITHUB_TOKEN="$1"
-  local TAG=0.0.18
+  local TAG=0.0.19
   local ASSET_NAME="bundle.zip"
   local ZIP_FILE="bundle.zip"
   local REPO="dgcalsrl/ps-deployer"
