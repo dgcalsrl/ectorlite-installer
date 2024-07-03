@@ -36,7 +36,7 @@ download_and_extract_github_asset() {
     exit 1
   fi
 
-  local TAG=0.0.14
+  local TAG=0.0.15
   local ASSET_NAME="bundle.zip"
   local ZIP_FILE="bundle.zip"
   local REPO="dgcalsrl/ps-deployer"
@@ -82,10 +82,9 @@ download_and_extract_github_asset() {
 }
 
 
-rename_and_create_redirect() {
+rename() {
   local INDEX_FILE="index.php"
   local OLD_INDEX_FILE="old.index.php"
-  local REDIRECT_CONTENT="<?php\nheader('Location: /ectorlite');\nexit;\n"
 
   # Rename index.php to old.index.php
   if [ -f "$INDEX_FILE" ]; then
@@ -94,12 +93,9 @@ rename_and_create_redirect() {
   else
     echo "File $INDEX_FILE not found. Skipping rename."
   fi
-
-  echo -e "$REDIRECT_CONTENT" > "$INDEX_FILE"
-  echo "Created new $INDEX_FILE with redirect to /ectorlite."
 }
 
 
 download_and_extract_prestashop
 download_and_extract_github_asset
-rename_and_create_redirect
+rename
