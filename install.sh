@@ -43,7 +43,7 @@ if [ -z "$GITHUB_TOKEN" ]; then
 fi
 
 # Specifica il tag della release
-TAG="0.0.7"
+TAG="$MODULE_TAG"
 
 # Nome del file zip
 ASSET_NAME="bundle.zip"
