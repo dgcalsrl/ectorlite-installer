@@ -1,5 +1,12 @@
 #!/bin/bash
 
+read -p "Inserisci il tuo token GitHub: " -r GITHUB_TOKEN
+
+if [ -z "$GITHUB_TOKEN" ]; then
+  echo "Errore: nessun token inserito."
+  exit 1
+fi
+
 # Funzione per scaricare e estrarre PrestaShop
 download_and_extract_prestashop() {
   local PS_VERSION="8.1.7"
@@ -29,14 +36,9 @@ download_and_extract_prestashop() {
 
 # Funzione per scaricare e estrarre un asset da una release GitHub
 download_and_extract_github_asset() {
-  read -p "Inserisci il tuo token GitHub: " -r GITHUB_TOKEN
 
-  if [ -z "$GITHUB_TOKEN" ]; then
-    echo "Errore: nessun token inserito."
-    exit 1
-  fi
-
-  local TAG=0.0.17
+  local GITHUB_TOKEN="$1"
+  local TAG=0.0.18
   local ASSET_NAME="bundle.zip"
   local ZIP_FILE="bundle.zip"
   local REPO="dgcalsrl/ps-deployer"
@@ -97,5 +99,5 @@ rename() {
 
 
 download_and_extract_prestashop
-download_and_extract_github_asset
+download_and_extract_github_asset "$GITHUB_TOKEN"
 rename
