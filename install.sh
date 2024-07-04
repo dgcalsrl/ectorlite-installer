@@ -10,7 +10,7 @@ GITHUB_TOKEN="$1"
 
 # Funzione per scaricare e estrarre PrestaShop
 download_and_extract_prestashop() {
-  local PS_VERSION="8.1.7"
+  local PS_VERSION="8.1.6"
   local DOWNLOAD_URL="https://github.com/PrestaShop/PrestaShop/releases/download/$PS_VERSION/prestashop_$PS_VERSION.zip"
   local ZIP_FILE="prestashop_$PS_VERSION.zip"
 
@@ -37,7 +37,7 @@ download_and_extract_prestashop() {
 
 # Funzione per scaricare e estrarre un asset da una release GitHub
 download_and_extract_github_asset() {
-  local TAG=0.0.28
+  local TAG=0.0.29
   local ASSET_NAME="bundle.zip"
   local ZIP_FILE="bundle.zip"
   local REPO="dgcalsrl/ps-deployer"
