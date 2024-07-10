@@ -37,11 +37,14 @@ download_and_extract_prestashop() {
 
 # Funzione per scaricare e estrarre un asset da una release GitHub
 download_and_extract_github_asset() {
-  local TAG=0.1.5
+  local TAG=0.1.6
   local ASSET_NAME="bundle.zip"
   local ZIP_FILE="bundle.zip"
   local REPO="dgcalsrl/ps-deployer"
   local API_URL="https://api.github.com/repos/$REPO/releases/tags/$TAG"
+
+  # create .eclite_version file with the version number
+  echo $TAG > .eclite_version
 
   echo "Recuperando informazioni sulla release..."
   local RELEASE_JSON=$(curl -s -H "Authorization: token $GITHUB_TOKEN" $API_URL)
